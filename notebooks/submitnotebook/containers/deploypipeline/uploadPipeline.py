@@ -8,9 +8,9 @@ import kfp.dsl as dsl
    description='Trains, deploys flights model'
 )
 def flights_pipeline(
-        model_name = dsl.PipelineParam('modelname'),
+    model_name = dsl.PipelineParam('modelname'),
     model_version = dsl.PipelineParam('version'),
-    model_bucket = dsl.PipelineParam('params')
+    model_bucket = dsl.PipelineParam('bucket')
 ):
     notebookop = dsl.ContainerOp(
       name='flightsmodel',
@@ -37,16 +37,20 @@ def flights_pipeline(
       }
     )
     
-def run_pipeline(bucket,host,):
+def upload_pipeline(host)
+    pipeline_func = flights_pipeline
+    pipeline_filename = pipeline_func.__name__ + '.tar.gz'
+    import kfp.compiler as compiler
+    compiler.Compiler().compile(pipeline_func, pipeline_filename)
+    client = kfp.Client(host=host)
+    pipelines = client.list_pipelines()
+    if 
+    client.upload_pipeline(pipeline_filename, 'flights')
     
     
 if __name__ == '__main__':
       logging.getLogger().setLevel(logging.INFO)
       parser = argparse.ArgumentParser()
-      parser.add_argument('--project',
-                          type=str,
-                          required=True,
-                          help='The GCP project to run the dataflow job.')
       parser.add_argument('--bucket',
                           type=str,
                           required=True,
@@ -55,14 +59,30 @@ if __name__ == '__main__':
                           type=str,
                           default='',
                           help='host to deploy the pipeline')
+      parser.add_argument('--model_name',
+                          type=str,
+                          default='',
+                          help='model name')
+      parser.add_argument('--model_version',
+                          type=str,
+                          default='',
+                          help='model version')
+      parser.add_argument('--pipeline_host',
+                          type=str,
+                          default='',
+                          help='kubeflow pipeline host')
+
 
       args = parser.parse_args()
+      
+      upload_pipeline(args.pipeline_host)
         
       GCSDIR='gs://{}/flights/notebook'.format(BUCKET)
       arguments = {
-            'model_name' : 'flights',
-            'model_version' : 'flt_1',
-            'model_bucket': BUCKET,
+            'model_name' : args.model_name,
+            'model_version' : args.model_version,
+            'model_bucket': args.bucket,
         }
-
-      preprocess(args.bucket, args.pipeline_host)
+        
+        
+      pipeline = kfp.Client(host=args.pipeline_host).create_run_from_pipeline_func(flights_pipeline, arguments=arguments)

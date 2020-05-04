@@ -1,4 +1,4 @@
-# Copyright 2018 The Kubeflow Authors
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,22 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM gcr.io/ml-pipeline/ml-pipeline-dataflow-tft:latest
 
-FROM continuumio/miniconda3
+RUN mkdir /pipeline
 
+COPY uploadPipeline.py /pipeline
 
-
-
-RUN apt-get update -y && apt-get install --no-install-recommends -y -q ca-certificates curl
-
-
-
-COPY run_notebook.sh ./
-
-
-
-ENTRYPOINT ["bash", "./run_notebook.sh"]
-
-
-
-
+ENTRYPOINT ["python", "/pipeline/uploadPipeline.py"]
